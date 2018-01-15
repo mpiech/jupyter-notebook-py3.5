@@ -68,6 +68,7 @@ RUN mkdir $HOME/.jupyter \
         'seaborn=0.7*' \
         'scikit-learn=0.18*' \
         'protobuf=3.*' \
+	'plotly=2.2*' \
     && $CONDA_DIR/bin/conda clean -tipsy \
     && $CONDA_DIR/bin/conda remove --quiet --yes --force qt pyqt \
     && jupyter nbextension enable --py widgetsnbextension --sys-prefix \
@@ -80,6 +81,16 @@ USER root
 # IPython
 EXPOSE 8888
 WORKDIR $HOME
+
+# Plotly patch
+
+RUN mv $CONDA_DIR/lib/python3.6/site-packages/plotly/package_data/graphWidget.js $CONDA_DIR/lib/python3.6/site-packages/plotly/package_data/graphWidget.orig.js  \
+    && mv $CONDA_DIR/lib/python3.6/site-packages/plotly/widgets/graph_widget.py $CONDA_DIR/lib/python3.6/site-packages/plotly/widgets/graph_widget.orig.py
+
+COPY ./plotly-patch/graphWidget.js $CONDA_DIR/lib/python3.6/site-packages/plotly/package_data
+
+COPY ./plotly-patch/graph_widget.py $CONDA_DIR/lib/python3.6/site-packages/plotly/widgets
+
 
 RUN mkdir /notebooks  \
     && mkdir -p $HOME/.jupyter \
